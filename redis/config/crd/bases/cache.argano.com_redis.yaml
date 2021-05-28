@@ -36,7 +36,7 @@ spec:
           spec:
             description: RedisSpec defines the desired state of Redis
             properties:
-              foo:
+              isLocal:
                 description: IsLocal - for local instance of Redis. Edit redis_types.go
                   to remove/update
                 type: boolean

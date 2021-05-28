@@ -29,7 +29,7 @@ type RedisSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// IsLocal - for local instance of Redis. Edit redis_types.go to remove/update
-	IsLocal bool `json:"foo,omitempty"`
+	IsLocal bool `json:"isLocal,omitempty"`
 	// Redis Cluster Size
 	Size    int32 `json:"size,omitempty"`
 	// Redis Listen Port
