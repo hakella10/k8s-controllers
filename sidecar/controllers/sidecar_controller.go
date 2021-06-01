@@ -77,6 +77,8 @@ func (r *SidecarReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	  }
 
 	  sidecarList.Items[i].Status.Nodes = podNames
+	  //CRUD Sidecar Object using the API methods defined here in docs
+	  //TODO https://sdk.operatorframework.io/docs/building-operators/golang/references/client/
 	  fmt.Println("****",sidecarList.Items[i].Status.Nodes)
 	}
 
