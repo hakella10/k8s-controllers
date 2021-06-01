@@ -65,15 +65,19 @@ func (r *SidecarReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	  fmt.Println("  Labels = ",sidecarList.Items[i].Labels)
 
 	  podList := &corev1.PodList{}
-          err := r.List(ctx,podList)
+          err := r.List(ctx,podList,client.MatchingLabels(sidecarList.Items[i].Labels))
 	  if(err != nil) {
 	    fmt.Println("!!! Unable to find Pods",err)
 	  }
 
+	  var podNames []string
 	  for j:=0;j<len(podList.Items);j++ {
 	    fmt.Println("    Pods = ",podList.Items[j].Name)
+	    podNames = append(podNames,podList.Items[j].Name)
 	  }
-	  fmt.Println("****")
+
+	  sidecarList.Items[i].Status.Nodes = podNames
+	  fmt.Println("****",sidecarList.Items[i].Status.Nodes)
 	}
 
 	return ctrl.Result{}, nil
@@ -83,6 +87,6 @@ func (r *SidecarReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 func (r *SidecarReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&injectorv1alpha1.Sidecar{}).
-		Owns(&corev1.Pod{}).
+//		Owns(&corev1.Pod{}).
 		Complete(r)
 }
