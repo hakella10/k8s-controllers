@@ -77,7 +77,8 @@ func (r *SidecarReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	  }
 
 	  sidecarList.Items[i].Status.Nodes = podNames
-	  fmt.Println("****",sidecarList.Items[i].Status.Nodes)
+	  sidecar := sidecarList.Items[i].DeepCopy()
+	  r.Status().Update(ctx,sidecar)
 	}
 
 	return ctrl.Result{}, nil
