@@ -51,36 +51,31 @@ type SidecarReconciler struct {
 func (r *SidecarReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	// your logic here
-        fmt.Println("###Looping inside sidecar-controller!###")
+	// Add Controller Logic Here
 	sidecarList := &injectorv1alpha1.SidecarList{}
 	err :=  r.List(ctx,sidecarList)
 	if(err != nil){
-          fmt.Println("!!! Unable to find sidecars",err)
+          fmt.Println("!!! Error while listing sidecars",err)
+	  return ctrl.Result{},err
 	}
 
 	for i:=0;i<len(sidecarList.Items);i++ {
-	  fmt.Println("****")
-          fmt.Println("Name of sidecar[",i,"] = ",sidecarList.Items[i].Name)
-	  fmt.Println("  Labels = ",sidecarList.Items[i].Labels)
-
 	  podList := &corev1.PodList{}
           err := r.List(ctx,podList,client.MatchingLabels(sidecarList.Items[i].Labels))
 	  if(err != nil) {
-	    fmt.Println("!!! Unable to find Pods",err)
+            fmt.Println("!!! Error while listing Pods",err)
 	  }
 
 	  var podNames []string
 	  for j:=0;j<len(podList.Items);j++ {
-	    fmt.Println("    Pods = ",podList.Items[j].Name)
 	    podNames = append(podNames,podList.Items[j].Name)
 	  }
 
+	  // CRUD Sidecar Object using API methods defined here
+	  // Refer https://sdk.operatorframework.io/docs/building-operators/golang/references/client/
 	  sidecarList.Items[i].Status.Nodes = podNames
 	  sidecar := sidecarList.Items[i].DeepCopy()
 	  r.Status().Update(ctx,sidecar)
-	  //CRUD Sidecar Object using the API methods defined here in docs
-	  //Refer https://sdk.operatorframework.io/docs/building-operators/golang/references/client/
 	}
 
 	return ctrl.Result{}, nil
