@@ -52,6 +52,10 @@ func (r *SidecarReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	_ = log.FromContext(ctx)
 
 	// Add Controller Logic Here
+	// 1. Read the CRD Object of Sidecar
+	// 2. Get List of Active Pods with matching labels
+	// 3. if Pod has annotation not morked, then update the pod with sidecar container and mark the annotation
+	// 4. if Pod has annotation marked, then add the podNames to Sidecar.Status.Nodes
 	sidecarList := &injectorv1alpha1.SidecarList{}
 	err :=  r.List(ctx,sidecarList)
 	if(err != nil){
@@ -69,6 +73,12 @@ func (r *SidecarReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	  var podNames []string
 	  for j:=0;j<len(podList.Items);j++ {
 	    podNames = append(podNames,podList.Items[j].Name)
+	    pod   := podList.Items[j].DeepCopy()
+	    patch := client.MergeFrom(pod)
+	    err := r.Patch(ctx,pod,patch)
+	    if(err != nil){
+	      fmt.Println("!!! Unable to patch Pod",err)
+	    }
 	  }
 
 	  // CRUD Sidecar Object using API methods defined here
@@ -85,6 +95,6 @@ func (r *SidecarReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 func (r *SidecarReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&injectorv1alpha1.Sidecar{}).
-//		Owns(&corev1.Pod{}).
+		Owns(&corev1.Pod{}).
 		Complete(r)
 }
