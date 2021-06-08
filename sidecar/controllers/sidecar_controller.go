@@ -76,7 +76,7 @@ func (r *SidecarReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	  return ctrl.Result{},err
 	}
 
-	// 3. If Pod has annotation not marked, then update the pod with sidecar container and mark the annotation
+	// 3. If Pod has annotation not marked, then replicate the pod with sidecar container and mark the annotations
 	for i:=0;i<len(podList.Items);i++ {
           pod := podList.Items[i]
 	  if ( pod.Status.Phase == "Running" && pod.Annotations["sidecar-injector"] != req.Name ) {
@@ -92,14 +92,20 @@ func (r *SidecarReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	    newPod.Spec.Containers = append(newPod.Spec.Containers,sidecar.Spec.Containers...)
 	    newPod.Spec.Volumes    = append(newPod.Spec.Volumes,sidecar.Spec.Volumes...)
 	    newPod.Name = newPod.Name+"-injected"
-	    if(err != nil){
-	      logger.Error(err,"Unable to delete Pod"+newPod.Name)
-	    }
 	    // Recreate the POD with Sidecar Injected
 	    err = r.Create(ctx,newPod)
 	    if(err != nil){
               logger.Error(err,"Unable to recreate Pod "+newPod.Name)
 	    }
+
+	    oldPod := pod.DeepCopy()
+            oldPod.ObjectMeta.Annotations = annotations
+	    // Mark annotation on the old POD
+	    err = r.Update(ctx,oldPod)
+	    if(err != nil){
+	      logger.Error(err,"Unable to update Pod "+oldPod.Name)
+	    }
+
           } 
 	}
 
