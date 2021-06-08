@@ -54,15 +54,13 @@ func (r *SidecarReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	_ = logf.FromContext(ctx)
 
 	logger = logf.Log.WithName(req.Namespace+"/"+req.Name)
-	// Add Controller Logic Here
-	// 3. if Pod has annotation not morked, then update the pod with sidecar container and mark the annotation
-	// 4. if Pod has annotation marked, then add the podNames to Sidecar.Status.Nodes
-
-	// 1. Get CRD Object of the Sidecar
+	// Controller Logic Here
+	// 1. Get Object of type Sidecar
 	sidecar := &injectorv1alpha1.Sidecar{}
 	err := r.Get(ctx,req.NamespacedName,sidecar)
 	if(err != nil){
           logger.Error(err,"Unable to fetch Sidecar object ",req.Namespace,req.Name)
+	  return ctrl.Result{},err
 	}
 
 	// 2. Get List of Active Pods with matching labels
@@ -75,22 +73,32 @@ func (r *SidecarReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	err = r.List(ctx,podList,opts...)
         if(err != nil){
 	  logger.Error(err,"Unable to list Pods",req.Namespace,req.Name)
+	  return ctrl.Result{},err
 	}
 
 	// 3. If Pod has annotation not marked, then update the pod with sidecar container and mark the annotation
 	for i:=0;i<len(podList.Items);i++ {
           pod := podList.Items[i]
-	  if pod.Status.Phase == "Running" {
+	  if ( pod.Status.Phase == "Running" && pod.Annotations["sidecar-injector"] != req.Name ) {
+            logger.Info(pod.Name)
 	    newPod := pod.DeepCopy()
-	    annotations :=  newPod.ObjectMeta.Annotations
+	    annotations :=  newPod.Annotations
 	    if(annotations == nil) {
 	      annotations = make(map[string]string)
 	    }
-	    annotations["injector-sidecar"] = req.Name
+	    annotations["sidecar-injector"] = req.Name
 	    newPod.ObjectMeta.Annotations = annotations
-	    err := r.Update(ctx,newPod)
+	    newPod.ObjectMeta.ResourceVersion = ""
+	    newPod.Spec.Containers = append(newPod.Spec.Containers,sidecar.Spec.Containers...)
+	    newPod.Spec.Volumes    = append(newPod.Spec.Volumes,sidecar.Spec.Volumes...)
+	    newPod.Name = newPod.Name+"-injected"
 	    if(err != nil){
-              logger.Error(err,"Unable to set annotations on Pod "+newPod.Name)
+	      logger.Error(err,"Unable to delete Pod"+newPod.Name)
+	    }
+	    // Recreate the POD with Sidecar Injected
+	    err = r.Create(ctx,newPod)
+	    if(err != nil){
+              logger.Error(err,"Unable to recreate Pod "+newPod.Name)
 	    }
           } 
 	}
@@ -105,7 +113,7 @@ func (r *SidecarReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	var podNames []string
 	for i:=0;i<len(podList.Items);i++ {
 	  pod := podList.Items[i]
-	  if(pod.Status.Phase == "Running" && pod.Annotations["injector-sidecar"] == req.Name) {
+	  if(pod.Status.Phase == "Running" && pod.Annotations["sidecar-injector"] == req.Name) {
 	    podNames = append(podNames,pod.Name)
 	  }
 	}

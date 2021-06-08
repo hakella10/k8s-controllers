@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -28,20 +29,16 @@ type SidecarSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Sidecar Image to Inject 
-	Image string `json:"image,omitempty"`
-
-	// Shared Mount Path
-	SharedMountPath string `json:"sharedMountPath,omitempty"`
+	// Sidecar Volumes
+	Volumes []corev1.Volume  `json:"volumes,omitempty"`
+        // Sidecar Containers
+	Containers []corev1.Container `json:"containers,omitempty"`
 }
 
 // SidecarStatus defines the observed state of Sidecar
 type SidecarStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-
-	// Capture Run State of the Sidecar
-	IsRunning bool `json:"isRunning,omitempty"`
 
 	// List of Pods to which Sidecar is attached
 	Nodes []string  `json:"nodes"`
