@@ -43,5 +43,5 @@ func main() {
   }
 
   log.Println("Starting server on port 8443")
-  log.Fatal(srvr.ListenAndServeTLS("./webhook.crt", "./webhook.key"))
+  log.Fatal(srvr.ListenAndServeTLS("/opt/crt/webhook.crt", "/opt/key/webhook.key"))
 }
