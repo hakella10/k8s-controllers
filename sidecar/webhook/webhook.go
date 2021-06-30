@@ -96,6 +96,7 @@ func mutate(ar *v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
     }
   }
   
+  /*
   patchBytes,err := json.Marshal([]byte(""))
   if(err != nil) {
     log.Println(err)
@@ -111,6 +112,11 @@ func mutate(ar *v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
       pt := v1beta1.PatchTypeJSONPatch
       return &pt
     }(),
+  }
+  */
+  
+  return &v1beta1.AdmissionResponse{
+    Allowed: true,
   }
 }
 
