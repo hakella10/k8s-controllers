@@ -9,7 +9,7 @@ import (
   "encoding/json"
 
   corev1 "k8s.io/api/core/v1"
-  "k8s.io/api/admission/v1beta1"
+  admission "k8s.io/api/admission/v1"
   "k8s.io/apimachinery/pkg/runtime"
   "k8s.io/apimachinery/pkg/runtime/serializer"
 )
@@ -30,11 +30,11 @@ func init() {
   log.Println("You are init()")
 }
 
-func validate(ar *v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
+func validate(ar *admission.AdmissionReview) *admission.AdmissionResponse {
   log.Println(ar)
 
   if(ar.Request == nil) {
-    return &v1beta1.AdmissionResponse{
+    return &admission.AdmissionResponse{
       Allowed: false,
     }
   }
@@ -43,12 +43,12 @@ func validate(ar *v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
   req := ar.Request
   if err := json.Unmarshal(req.Object.Raw, &pod); err != nil {
     log.Println(err)
-    return &v1beta1.AdmissionResponse{
+    return &admission.AdmissionResponse{
       Allowed: false,
     }
   }
 
-  return &v1beta1.AdmissionResponse{
+  return &admission.AdmissionResponse{
     Allowed: true,
   }
 }
@@ -62,14 +62,14 @@ func handleValidate(w http.ResponseWriter, r *http.Request) {
     http.Error(w, fmt.Sprintf("could not read body: %v", err), http.StatusInternalServerError)
   }
 
-  admissionReview  := v1beta1.AdmissionReview{}
+  admissionReview  := admission.AdmissionReview{}
   if _, _, err := deserializer.Decode(body, nil, &admissionReview); err != nil {
     log.Println(err)
     http.Error(w, fmt.Sprintf("could not decode body: %v", err), http.StatusInternalServerError)
   }
 
   admissionResponse := mutate(&admissionReview)
-  review := v1beta1.AdmissionReview{}
+  review := admission.AdmissionReview{}
   if(admissionResponse != nil){
     review.Response = admissionResponse
     if(admissionReview.Request != nil){
@@ -88,11 +88,11 @@ func handleValidate(w http.ResponseWriter, r *http.Request) {
   w.Write(body)
 }
 
-func mutate(ar *v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
+func mutate(ar *admission.AdmissionReview) *admission.AdmissionResponse {
   log.Println(ar)
 
   if(ar.Request == nil) {
-    return &v1beta1.AdmissionResponse{
+    return &admission.AdmissionResponse{
       Allowed: false,
     }
   }
@@ -101,7 +101,7 @@ func mutate(ar *v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
   req := ar.Request
   if err := json.Unmarshal(req.Object.Raw, &pod); err != nil {
     log.Println(err)
-    return &v1beta1.AdmissionResponse{
+    return &admission.AdmissionResponse{
       Allowed: false,
     }
   }
@@ -111,16 +111,16 @@ func mutate(ar *v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
   patchBytes,err := json.Marshal(patches)
   if(err != nil) {
     log.Println(err)
-    return &v1beta1.AdmissionResponse{
+    return &admission.AdmissionResponse{
       Allowed: false,
     }
   }
 
-  return &v1beta1.AdmissionResponse{
+  return &admission.AdmissionResponse{
     Allowed: true,
     Patch:   patchBytes,
-    PatchType: func() *v1beta1.PatchType {
-      pt := v1beta1.PatchTypeJSONPatch
+    PatchType: func() *admission.PatchType {
+      pt := admission.PatchTypeJSONPatch
       return &pt
     }(),
   }
@@ -136,14 +136,14 @@ func handleMutate(w http.ResponseWriter, r *http.Request) {
     http.Error(w, fmt.Sprintf("could not read body: %v", err), http.StatusInternalServerError)
   }
 
-  admissionReview  := v1beta1.AdmissionReview{}
+  admissionReview  := admission.AdmissionReview{}
   if _, _, err := deserializer.Decode(body, nil, &admissionReview); err != nil {
     log.Println(err)
     http.Error(w, fmt.Sprintf("could not decode body: %v", err), http.StatusInternalServerError)
   }
 
   admissionResponse := mutate(&admissionReview)
-  review := v1beta1.AdmissionReview{}
+  review := admission.AdmissionReview{}
   if(admissionResponse != nil){
     review.Response = admissionResponse
     if(admissionReview.Request != nil){
