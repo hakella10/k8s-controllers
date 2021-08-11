@@ -26,15 +26,18 @@ To manage these automatically and with minimal overhead, we can implement a bit 
 <u>How to Solve:</u>
 
 This is where K8S provide us with extension hooks and custom resources. 
-Lets visualize the solution in the below diagram - 
 
 ![image](https://user-images.githubusercontent.com/72021023/129068953-3420a2cd-d2fb-4c78-bee4-be4632f22226.png)
-
+                    III
+                     V
 ![image](https://user-images.githubusercontent.com/72021023/129069011-5e1b035b-3ed2-41a0-8d9d-28ed68706420.png)
-
+                    III
+                     V
 ![image](https://user-images.githubusercontent.com/72021023/129069055-4a165a8e-a3c8-40ee-9fee-eeebf76ff290.png)
-
+                    III
+                     V
 ![image](https://user-images.githubusercontent.com/72021023/129069097-bc0f3a33-d61c-425a-baf4-f1fce069bae1.png)
-
+                    III
+                     V
 ![image](https://user-images.githubusercontent.com/72021023/129069386-9740419c-1a21-4d99-b54b-b662a546d5e2.png)
 
