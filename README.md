@@ -1,6 +1,6 @@
 # k8s-controllers
 
-Challenges: 
+<b>Challenges:</b>
 
  It is always a typical need to enhance the POD spec before deploying to K8S cluster. 
  
@@ -23,7 +23,7 @@ It is cumbersome to keep track of these changes and latest versions to be added 
 
 To manage these automatically and with minimal overhead, we can implement a bit of automation by extending the K8S APIs with custom logic. With additional features like versioning the utilities, targetting specific applications - grouped by namespaces, tages by labels, tracked using annotations. 
 
-How to Solve:
+<u>How to Solve:</u>
 
 This is where K8S provide us with extension hooks and custom resources. 
 Lets visualize the solution in the below diagram - 
